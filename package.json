@@ -1,0 +1,48 @@
+{
+  "name": "@hexlet/code",
+  "version": "1.0.0",
+  "description": "[![Actions Status](https://github.com/kakkoiirus/frontend-project-lvl3/workflows/hexlet-check/badge.svg)](https://github.com/kakkoiirus/frontend-project-lvl3/actions)",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kakkoiirus/frontend-project-lvl3.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kakkoiirus/frontend-project-lvl3/issues"
+  },
+  "homepage": "https://github.com/kakkoiirus/frontend-project-lvl3#readme",
+  "jest": {
+    "verbose": true,
+    "testURL": "http://localhost/"
+  },
+  "devDependencies": {
+    "@babel/core": "7.12.16",
+    "@babel/preset-env": "7.12.16",
+    "babel-eslint": "10.1.0",
+    "babel-jest": "26.6.3",
+    "babel-loader": "8.2.2",
+    "css-loader": "5.0.2",
+    "debug": "4.3.1",
+    "eslint": "7.20.0",
+    "eslint-config-airbnb-base": "14.2.1",
+    "eslint-plugin-babel": "5.3.1",
+    "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-jest": "24.1.5",
+    "html-webpack-plugin": "5.1.0",
+    "jest": "26.6.3",
+    "jest-cli": "26.6.3",
+    "style-loader": "2.0.0",
+    "webpack": "5.22.0",
+    "webpack-cli": "4.5.0",
+    "webpack-dev-server": "3.11.2"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.7.0",
+    "bootstrap": "^5.0.0-beta2"
+  }
+}
