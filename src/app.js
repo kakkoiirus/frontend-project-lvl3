@@ -51,26 +51,24 @@ export default () => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const url = formData.get('url').trim();
-    schema
-      .isValid(url)
-      .then((isValid) => {
-        if (!isValid) {
-          view.watchedFormState.validationState = 'invalid';
-          view.watchedFormState.status = 'Ссылка должна быть валидным URL';
-          throw new Error('Ссылка должна быть валидным URL');
-        }
 
-        if (isValid) {
-          const isExist = state.feeds.some((feed) => feed.url === url);
+    const isValidUrl = schema.isValidSync(url);
 
-          if (isExist) {
-            view.watchedFormState.validationState = 'invalid';
-            view.watchedFormState.status = 'RSS уже существует';
-            throw new Error('RSS уже существует');
-          }
-        }
-      })
-      .then(() => getFeed(url))
+    if (!isValidUrl) {
+      view.watchedFormState.validationState = 'invalid';
+      view.watchedFormState.status = 'Ссылка должна быть валидным URL';
+      return;
+    }
+
+    const isExistInFeed = state.feeds.some((feed) => feed.url === url);
+
+    if (isExistInFeed) {
+      view.watchedFormState.validationState = 'invalid';
+      view.watchedFormState.status = 'RSS уже существует';
+      return;
+    }
+
+    getFeed(url)
       .then((data) => parseRSS(data))
       .then(({ title, description, posts }) => {
         const feedId = _.uniqueId();
@@ -90,6 +88,9 @@ export default () => {
         view.watchedFormState.validationState = 'valid';
         view.watchedFormState.status = 'RSS успешно загружен';
       })
-      .catch((err) => console.log(err));
+      .catch(() => {
+        view.watchedFormState.validationState = 'invalid';
+        view.watchedFormState.status = 'Ресурс не содержит валидный RSS';
+      });
   });
 };
