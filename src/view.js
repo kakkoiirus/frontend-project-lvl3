@@ -56,9 +56,14 @@ const renderFeeds = (feeds, elements) => {
     return;
   }
 
+  const title = document.createElement('h2');
+  title.textContent = i18n.t('feeds.title');
   const list = document.createElement('ul');
+  list.classList.add('list-group', 'mb-5');
+
   feeds.forEach((feed) => {
     const item = document.createElement('li');
+    item.classList.add('list-group-item');
     const header = document.createElement('h3');
     const description = document.createElement('p');
     header.textContent = feed.title;
@@ -68,6 +73,7 @@ const renderFeeds = (feeds, elements) => {
     list.appendChild(item);
   });
 
+  feedsBlock.appendChild(title);
   feedsBlock.appendChild(list);
 };
 
@@ -79,9 +85,14 @@ const renderPosts = (posts, elements) => {
     return;
   }
 
+  const title = document.createElement('h2');
+  title.textContent = i18n.t('posts.title');
   const list = document.createElement('ul');
+  list.classList.add('list-group');
+
   posts.forEach((post) => {
     const item = document.createElement('li');
+    item.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start');
     const link = document.createElement('a');
     link.textContent = post.title;
     link.href = post.url;
@@ -89,6 +100,7 @@ const renderPosts = (posts, elements) => {
     list.appendChild(item);
   });
 
+  postsBlock.appendChild(title);
   postsBlock.appendChild(list);
 };
 

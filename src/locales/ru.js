@@ -4,6 +4,12 @@ export default {
     form: {
       submit: 'Добавить',
     },
+    feeds: {
+      title: 'Фиды',
+    },
+    posts: {
+      title: 'Посты',
+    },
     messages: {
       errors: {
         invalidUrl: 'Ссылка должна быть валидным URL',
