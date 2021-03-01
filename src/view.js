@@ -1,4 +1,13 @@
 import onChange from 'on-change';
+import i18n from 'i18next';
+import resources from './locales';
+
+const init = (state) => {
+  i18n.init({
+    lng: state.language,
+    resources,
+  });
+};
 
 const renderForm = (form, elements) => {
   const { input, button, feedback } = elements;
@@ -19,7 +28,7 @@ const renderForm = (form, elements) => {
       button.removeAttribute('disabled');
       feedback.classList.remove('text-success');
       feedback.classList.add('text-danger');
-      feedback.textContent = form.message;
+      feedback.textContent = i18n.t(form.message);
       input.select();
       break;
 
@@ -30,7 +39,7 @@ const renderForm = (form, elements) => {
       button.removeAttribute('disabled');
       feedback.classList.remove('text-danger');
       feedback.classList.add('text-success');
-      feedback.textContent = form.message;
+      feedback.textContent = i18n.t(form.message);
       input.select();
       break;
 
@@ -95,6 +104,8 @@ export default (state, elements) => {
       mapping[path]();
     }
   });
+
+  init(state);
 
   return watchedState;
 };

@@ -1,4 +1,5 @@
 import * as yup from 'yup';
+import { setLocale } from 'yup';
 import axios from 'axios';
 import _ from 'lodash';
 
@@ -31,12 +32,27 @@ const parseRSS = (string) => {
   return { title, description, posts };
 };
 
-const validate = (url) => {
-  const schema = yup.string().trim().url().required();
+const validate = (url, feeds) => {
+  setLocale({
+    string: {
+      default: 'messages.errors.invalidUrl',
+      url: 'messages.errors.invalidUrl',
+    },
+  });
 
-  return schema.validate(url)
-    .then(() => true)
-    .catch(() => false);
+  const schema = yup
+    .string()
+    .trim()
+    .url()
+    .notOneOf(feeds, 'messages.errors.alreadyExist')
+    .required();
+
+  try {
+    schema.validateSync(url);
+    return null;
+  } catch (err) {
+    return err.message;
+  }
 };
 
 export default () => {
@@ -47,6 +63,7 @@ export default () => {
     },
     feeds: [],
     posts: [],
+    language: 'ru',
   };
 
   const elements = {
@@ -68,18 +85,11 @@ export default () => {
 
     watched.form.status = 'proccessing';
 
-    const isValidUrl = validate(url);
+    const feedList = state.feeds.map((feed) => feed.url);
 
-    if (!isValidUrl) {
-      watched.form.message = 'Ссылка должна быть валидным URL';
-      watched.form.status = 'failed';
-      return;
-    }
-
-    const isExistInFeed = state.feeds.some((feed) => feed.url === url);
-
-    if (isExistInFeed) {
-      watched.form.message = 'RSS уже существует';
+    const error = validate(url, feedList);
+    if (error) {
+      watched.form.message = error;
       watched.form.status = 'failed';
       return;
     }
@@ -101,11 +111,11 @@ export default () => {
         });
         watched.posts.push(...linkedPosts);
 
-        watched.form.message = 'RSS успешно загружен';
+        watched.form.message = 'messages.success.loaded';
         watched.form.status = 'success';
       })
       .catch(() => {
-        watched.form.message = 'Ресурс не содержит валидный RSS';
+        watched.form.message = 'messages.errors.wrongResource';
         watched.form.status = 'failed';
       });
   });
