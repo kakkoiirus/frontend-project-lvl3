@@ -2,7 +2,7 @@ import * as yup from 'yup';
 import axios from 'axios';
 import _ from 'lodash';
 
-import View from './View.js';
+import initView from './view.js';
 
 const prepareUrl = (url) => `https://hexlet-allorigins.herokuapp.com/raw?url=${encodeURIComponent(url)}`;
 
@@ -31,40 +31,56 @@ const parseRSS = (string) => {
   return { title, description, posts };
 };
 
+const validate = (url) => {
+  const schema = yup.string().trim().url().required();
+
+  return schema.validate(url)
+    .then(() => true)
+    .catch(() => false);
+};
+
 export default () => {
   const state = {
     form: {
-      validationState: '',
-      status: '',
+      status: 'filling',
+      message: '',
     },
     feeds: [],
     posts: [],
   };
 
-  const view = new View(state);
-  view.init();
+  const elements = {
+    input: document.querySelector('[name="url"]'),
+    button: document.querySelector('[type="submit"'),
+    feedsBlock: document.querySelector('.feeds'),
+    postsBlock: document.querySelector('.posts'),
+    feedback: document.querySelector('.feedback'),
+  };
+
+  const watched = initView(state, elements);
 
   const form = document.querySelector('#rss-form');
-  const schema = yup.string().url();
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    const url = formData.get('url').trim();
+    const url = formData.get('url');
 
-    const isValidUrl = schema.isValidSync(url);
+    watched.form.status = 'proccessing';
+
+    const isValidUrl = validate(url);
 
     if (!isValidUrl) {
-      view.watchedFormState.validationState = 'invalid';
-      view.watchedFormState.status = 'Ссылка должна быть валидным URL';
+      watched.form.message = 'Ссылка должна быть валидным URL';
+      watched.form.status = 'failed';
       return;
     }
 
     const isExistInFeed = state.feeds.some((feed) => feed.url === url);
 
     if (isExistInFeed) {
-      view.watchedFormState.validationState = 'invalid';
-      view.watchedFormState.status = 'RSS уже существует';
+      watched.form.message = 'RSS уже существует';
+      watched.form.status = 'failed';
       return;
     }
 
@@ -72,7 +88,7 @@ export default () => {
       .then((data) => parseRSS(data))
       .then(({ title, description, posts }) => {
         const feedId = _.uniqueId();
-        view.watchedFeedsState.push({
+        watched.feeds.push({
           id: feedId,
           title,
           description,
@@ -83,14 +99,14 @@ export default () => {
           const newPost = { ...post, feedId };
           return newPost;
         });
-        view.watchedPostsState.push(...linkedPosts);
+        watched.posts.push(...linkedPosts);
 
-        view.watchedFormState.validationState = 'valid';
-        view.watchedFormState.status = 'RSS успешно загружен';
+        watched.form.message = 'RSS успешно загружен';
+        watched.form.status = 'success';
       })
       .catch(() => {
-        view.watchedFormState.validationState = 'invalid';
-        view.watchedFormState.status = 'Ресурс не содержит валидный RSS';
+        watched.form.message = 'Ресурс не содержит валидный RSS';
+        watched.form.status = 'failed';
       });
   });
 };
