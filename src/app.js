@@ -5,6 +5,8 @@ import _ from 'lodash';
 
 import initView from './view.js';
 
+const UPDATE_INTERVAL = 5000;
+
 const prepareUrl = (url) => `https://hexlet-allorigins.herokuapp.com/raw?url=${encodeURIComponent(url)}`;
 
 const getFeed = (url) => {
@@ -55,6 +57,44 @@ const validate = (url, feeds) => {
   }
 };
 
+const handleFeed = (url, feed, state) => {
+  const { title, description } = feed;
+  const feedId = _.uniqueId();
+
+  state.feeds.push({
+    id: feedId,
+    title,
+    description,
+    url,
+  });
+
+  return feedId;
+};
+
+const handlePosts = (feedId, feed, state) => {
+  const { posts } = feed;
+
+  const linkedPosts = posts.map((post) => {
+    const newPost = { ...post, feedId };
+    return newPost;
+  });
+
+  const postsDiff = _.differenceBy(linkedPosts, state.posts, 'url');
+  state.posts.unshift(...postsDiff);
+};
+
+const updatePosts = (state) => {
+  state.feeds.forEach((feed) => {
+    const { id, url } = feed;
+
+    getFeed(url)
+      .then((data) => parseRSS(data))
+      .then((rss) => handlePosts(id, rss, state));
+  });
+
+  setInterval(updatePosts, UPDATE_INTERVAL, state);
+};
+
 export default () => {
   const state = {
     form: {
@@ -64,6 +104,7 @@ export default () => {
     feeds: [],
     posts: [],
     language: 'ru',
+    updateTimerId: null,
   };
 
   const elements = {
@@ -96,23 +137,18 @@ export default () => {
 
     getFeed(url)
       .then((data) => parseRSS(data))
-      .then(({ title, description, posts }) => {
-        const feedId = _.uniqueId();
-        watched.feeds.push({
-          id: feedId,
-          title,
-          description,
-          url,
-        });
-
-        const linkedPosts = posts.map((post) => {
-          const newPost = { ...post, feedId };
-          return newPost;
-        });
-        watched.posts.push(...linkedPosts);
-
+      .then((feed) => {
+        const feedId = handleFeed(url, feed, watched);
+        handlePosts(feedId, feed, watched);
+      })
+      .then(() => {
         watched.form.message = 'messages.success.loaded';
         watched.form.status = 'success';
+      })
+      .then(() => {
+        if (!state.updateTimerId) {
+          state.updateTimerId = setTimeout(updatePosts, UPDATE_INTERVAL, watched);
+        }
       })
       .catch(() => {
         watched.form.message = 'messages.errors.wrongResource';
