@@ -1,9 +1,11 @@
+import 'bootstrap';
 import * as yup from 'yup';
 import { setLocale } from 'yup';
 import axios from 'axios';
 import _ from 'lodash';
 
 import initView from './view.js';
+import parseRSS from './parser.js';
 
 const UPDATE_INTERVAL = 20000;
 
@@ -14,24 +16,6 @@ const getFeed = (url) => {
   const data = axios.get(preparedUrl)
     .then((res) => res.data);
   return data;
-};
-
-const parseRSS = (string) => {
-  const domparser = new DOMParser();
-  const data = domparser.parseFromString(string, 'application/xml');
-  const title = data.querySelector('title').textContent;
-  const description = data.querySelector('description').textContent;
-
-  const items = data.querySelectorAll('item');
-  const posts = Array.from(items).map((item) => {
-    const postTitle = item.querySelector('title').textContent;
-    const postDescription = item.querySelector('description').textContent;
-    const postUrl = item.querySelector('link').textContent;
-
-    return { title: postTitle, description: postDescription, url: postUrl };
-  });
-
-  return { title, description, posts };
 };
 
 const validate = (url, feeds) => {
