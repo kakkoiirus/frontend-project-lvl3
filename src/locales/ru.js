@@ -9,6 +9,7 @@ export default {
     },
     posts: {
       title: 'Посты',
+      button: 'Просмотр',
     },
     messages: {
       errors: {

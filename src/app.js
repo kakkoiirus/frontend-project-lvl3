@@ -5,7 +5,7 @@ import _ from 'lodash';
 
 import initView from './view.js';
 
-const UPDATE_INTERVAL = 5000;
+const UPDATE_INTERVAL = 20000;
 
 const prepareUrl = (url) => `https://hexlet-allorigins.herokuapp.com/raw?url=${encodeURIComponent(url)}`;
 
@@ -75,7 +75,8 @@ const handlePosts = (feedId, feed, state) => {
   const { posts } = feed;
 
   const linkedPosts = posts.map((post) => {
-    const newPost = { ...post, feedId };
+    const postId = _.uniqueId();
+    const newPost = { id: postId, ...post, feedId };
     return newPost;
   });
 
@@ -105,21 +106,33 @@ export default () => {
     posts: [],
     language: 'ru',
     updateTimerId: null,
+    ui: {
+      posts: {
+        watched: [],
+      },
+      modal: {
+        title: '',
+        description: '',
+        url: '',
+      },
+    },
   };
 
   const elements = {
+    form: document.querySelector('#rss-form'),
     input: document.querySelector('[name="url"]'),
     button: document.querySelector('[type="submit"'),
     feedsBlock: document.querySelector('.feeds'),
     postsBlock: document.querySelector('.posts'),
     feedback: document.querySelector('.feedback'),
+    modalTitle: document.querySelector('.modal-title'),
+    modalBody: document.querySelector('.modal-body'),
+    modalLink: document.querySelector('.full-article'),
   };
 
   const watched = initView(state, elements);
 
-  const form = document.querySelector('#rss-form');
-
-  form.addEventListener('submit', (e) => {
+  elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const url = formData.get('url');
@@ -154,5 +167,23 @@ export default () => {
         watched.form.message = 'messages.errors.wrongResource';
         watched.form.status = 'failed';
       });
+  });
+
+  elements.postsBlock.addEventListener('click', (e) => {
+    const postId = e.target.dataset.id;
+
+    if (postId) {
+      e.stopPropagation();
+      watched.ui.posts.watched.push(postId);
+    }
+
+    if (e.target.dataset.bsTarget === '#modal') {
+      const { title, description, url } = state.posts.find((post) => post.id === postId);
+      watched.ui.modal = {
+        title,
+        description,
+        url,
+      };
+    }
   });
 };

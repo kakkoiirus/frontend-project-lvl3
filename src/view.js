@@ -77,7 +77,10 @@ const renderFeeds = (feeds, elements) => {
   feedsBlock.appendChild(list);
 };
 
-const renderPosts = (posts, elements) => {
+const renderPosts = (state, elements) => {
+  const { posts, ui } = state;
+  const { watched: watchedPosts } = ui.posts;
+
   const { postsBlock } = elements;
   postsBlock.innerHTML = '';
 
@@ -93,10 +96,25 @@ const renderPosts = (posts, elements) => {
   posts.forEach((post) => {
     const item = document.createElement('li');
     item.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start');
+
     const link = document.createElement('a');
+    const linkClasses = watchedPosts.find((watchedId) => post.id === watchedId) ? ['fw-normal', 'font-weight-normal'] : ['fw-bold', 'font-weight-bold'];
+    link.classList.add(...linkClasses);
+    link.dataset.id = post.id;
+    link.target = '_blank';
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.classList.add('btn', 'btn-primary', 'btn-sm');
+    button.dataset.bsToggle = 'modal';
+    button.dataset.bsTarget = '#modal';
+    button.dataset.id = post.id;
+    button.textContent = i18n.t('posts.button');
+
     link.textContent = post.title;
     link.href = post.url;
     item.appendChild(link);
+    item.appendChild(button);
     list.appendChild(item);
   });
 
@@ -104,11 +122,22 @@ const renderPosts = (posts, elements) => {
   postsBlock.appendChild(list);
 };
 
+const fillModal = (state, elements) => {
+  const { title, description, url } = state.ui.modal;
+  const { modalTitle, modalBody, modalLink } = elements;
+
+  modalTitle.textContent = title;
+  modalBody.textContent = description;
+  modalLink.href = url;
+};
+
 export default (state, elements) => {
   const mapping = {
     'form.status': () => renderForm(state.form, elements),
     feeds: () => renderFeeds(state.feeds, elements),
-    posts: () => renderPosts(state.posts, elements),
+    posts: () => renderPosts(state, elements),
+    'ui.posts.watched': () => renderPosts(state, elements),
+    'ui.modal': () => fillModal(state, elements),
   };
 
   const watchedState = onChange(state, (path) => {
