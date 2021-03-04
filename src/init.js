@@ -13,15 +13,10 @@ const UPDATE_INTERVAL = 20000;
 
 const prepareUrl = (url) => `https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(url)}`;
 
-const getFeed = (url, state) => {
+const getFeed = (url) => {
   const preparedUrl = prepareUrl(url);
   const data = axios.get(preparedUrl)
-    .then((res) => res.data.contents)
-    .catch(() => {
-      const { form } = state;
-      form.message = 'messages.errors.network';
-      form.status = 'failed';
-    });
+    .then((res) => res.data.contents);
   return data;
 };
 
@@ -145,23 +140,24 @@ export default () => {
       return;
     }
 
-    getFeed(url)
-      .then((data) => parseRSS(data))
-      .then((feed) => {
-        const feedId = handleFeed(url, feed, watched);
-        handlePosts(feedId, feed, watched);
-      })
-      .then(() => {
-        watched.form.message = 'messages.success.loaded';
-        watched.form.status = 'success';
-      })
-      .then(() => {
-        if (!state.updateTimerId) {
-          state.updateTimerId = setTimeout(updatePosts, UPDATE_INTERVAL, watched);
+    axios.get(prepareUrl(url))
+      .then((res) => {
+        try {
+          const feed = parseRSS(res.data.contents);
+          const feedId = handleFeed(url, feed, watched);
+          handlePosts(feedId, feed, watched);
+          watched.form.message = 'messages.success.loaded';
+          watched.form.status = 'success';
+          if (!state.updateTimerId) {
+            state.updateTimerId = setTimeout(updatePosts, UPDATE_INTERVAL, watched);
+          }
+        } catch (err) {
+          watched.form.message = 'messages.errors.wrongResource';
+          watched.form.status = 'failed';
         }
       })
       .catch(() => {
-        watched.form.message = 'messages.errors.wrongResource';
+        watched.form.message = 'messages.errors.network';
         watched.form.status = 'failed';
       });
   });
