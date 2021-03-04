@@ -1,15 +1,6 @@
 import onChange from 'on-change';
-import i18n from 'i18next';
-import resources from './locales';
 
-const init = (state) => {
-  i18n.init({
-    lng: state.language,
-    resources,
-  });
-};
-
-const renderForm = (form, elements) => {
+const renderForm = (form, elements, i18n) => {
   const { input, button, feedback } = elements;
   switch (form.status) {
     case 'filling':
@@ -48,7 +39,7 @@ const renderForm = (form, elements) => {
   }
 };
 
-const renderFeeds = (feeds, elements) => {
+const renderFeeds = (feeds, elements, i18n) => {
   const { feedsBlock } = elements;
   feedsBlock.innerHTML = '';
 
@@ -77,7 +68,7 @@ const renderFeeds = (feeds, elements) => {
   feedsBlock.appendChild(list);
 };
 
-const renderPosts = (state, elements) => {
+const renderPosts = (state, elements, i18n) => {
   const { posts, ui } = state;
   const { watched: watchedPosts } = ui.posts;
 
@@ -131,12 +122,12 @@ const fillModal = (state, elements) => {
   modalLink.href = url;
 };
 
-export default (state, elements) => {
+export default (state, elements, i18n) => {
   const mapping = {
-    'form.status': () => renderForm(state.form, elements),
-    feeds: () => renderFeeds(state.feeds, elements),
-    posts: () => renderPosts(state, elements),
-    'ui.posts.watched': () => renderPosts(state, elements),
+    'form.status': () => renderForm(state.form, elements, i18n),
+    feeds: () => renderFeeds(state.feeds, elements, i18n),
+    posts: () => renderPosts(state, elements, i18n),
+    'ui.posts.watched': () => renderPosts(state, elements, i18n),
     'ui.modal': () => fillModal(state, elements),
   };
 
@@ -145,8 +136,6 @@ export default (state, elements) => {
       mapping[path]();
     }
   });
-
-  init(state);
 
   return watchedState;
 };

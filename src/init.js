@@ -2,8 +2,10 @@ import 'bootstrap';
 import * as yup from 'yup';
 import { setLocale } from 'yup';
 import axios from 'axios';
+import i18next from 'i18next';
 import _ from 'lodash';
 
+import resources from './locales';
 import initView from './view.js';
 import parseRSS from './parser.js';
 
@@ -81,6 +83,12 @@ const updatePosts = (state) => {
 };
 
 export default () => {
+  const i18nextInstance = i18next.createInstance();
+  i18nextInstance.init({
+    lng: 'ru',
+    resources,
+  });
+
   const state = {
     form: {
       status: 'filling',
@@ -114,7 +122,7 @@ export default () => {
     modalLink: document.querySelector('.full-article'),
   };
 
-  const watched = initView(state, elements);
+  const watched = initView(state, elements, i18nextInstance);
 
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
