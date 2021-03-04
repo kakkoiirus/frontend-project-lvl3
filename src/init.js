@@ -13,10 +13,15 @@ const UPDATE_INTERVAL = 20000;
 
 const prepareUrl = (url) => `https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(url)}`;
 
-const getFeed = (url) => {
+const getFeed = (url, state) => {
   const preparedUrl = prepareUrl(url);
   const data = axios.get(preparedUrl)
-    .then((res) => res.data.contents);
+    .then((res) => res.data.contents)
+    .catch(() => {
+      const { form } = state;
+      form.message = 'messages.errors.network';
+      form.status = 'failed';
+    });
   return data;
 };
 
