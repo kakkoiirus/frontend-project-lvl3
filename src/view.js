@@ -5,17 +5,20 @@ const renderForm = (form, elements, i18n) => {
   switch (form.status) {
     case 'filling':
       input.removeAttribute('disabled');
+      input.removeAttribute('readonly');
       button.removeAttribute('disabled');
       break;
 
     case 'proccessing':
       input.setAttribute('disabled', true);
+      input.setAttribute('readonly', '');
       button.setAttribute('disabled', true);
       break;
 
     case 'failed':
       input.classList.add('is-invalid');
       input.removeAttribute('disabled');
+      input.removeAttribute('readonly');
       button.removeAttribute('disabled');
       feedback.classList.remove('text-success');
       feedback.classList.add('text-danger');
@@ -27,6 +30,7 @@ const renderForm = (form, elements, i18n) => {
       input.value = '';
       input.classList.remove('is-invalid');
       input.removeAttribute('disabled');
+      input.removeAttribute('readonly');
       button.removeAttribute('disabled');
       feedback.classList.remove('text-danger');
       feedback.classList.add('text-success');
