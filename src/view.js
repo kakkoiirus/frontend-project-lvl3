@@ -118,8 +118,9 @@ const renderPosts = (state, elements, i18n) => {
 };
 
 const fillModal = (state, elements) => {
-  const { title, description, url } = state.ui.modal;
+  const { postId } = state.ui.modal;
   const { modalTitle, modalBody, modalLink } = elements;
+  const { title, description, url } = state.posts.find((post) => post.id === postId);
 
   modalTitle.textContent = title;
   modalBody.textContent = description;
@@ -132,7 +133,7 @@ export default (state, elements, i18n) => {
     feeds: () => renderFeeds(state.feeds, elements, i18n),
     posts: () => renderPosts(state, elements, i18n),
     'ui.posts.watched': () => renderPosts(state, elements, i18n),
-    'ui.modal': () => fillModal(state, elements),
+    'ui.modal.postId': () => fillModal(state, elements),
   };
 
   const watchedState = onChange(state, (path) => {

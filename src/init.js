@@ -103,9 +103,7 @@ export default () => {
         watched: [],
       },
       modal: {
-        title: '',
-        description: '',
-        url: '',
+        postId: null,
       },
     },
   };
@@ -171,12 +169,7 @@ export default () => {
     }
 
     if (e.target.dataset.bsTarget === '#modal') {
-      const { title, description, url } = state.posts.find((post) => post.id === postId);
-      watched.ui.modal = {
-        title,
-        description,
-        url,
-      };
+      watched.ui.modal.postId = postId;
     }
   });
 };
