@@ -74,7 +74,7 @@ const renderFeeds = (feeds, elements, i18n) => {
 
 const renderPosts = (state, elements, i18n) => {
   const { posts, ui } = state;
-  const { watched: watchedPosts } = ui.posts;
+  const { watchedPosts } = ui;
 
   const { postsBlock } = elements;
   postsBlock.innerHTML = '';
@@ -93,7 +93,7 @@ const renderPosts = (state, elements, i18n) => {
     item.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start');
 
     const link = document.createElement('a');
-    const linkClasses = watchedPosts.find((watchedId) => post.id === watchedId) ? ['fw-normal', 'font-weight-normal'] : ['fw-bold', 'font-weight-bold'];
+    const linkClasses = watchedPosts.has(post.id) ? ['fw-normal', 'font-weight-normal'] : ['fw-bold', 'font-weight-bold'];
     link.classList.add(...linkClasses);
     link.dataset.id = post.id;
     link.target = '_blank';
@@ -132,7 +132,7 @@ export default (state, elements, i18n) => {
     'form.status': () => renderForm(state.form, elements, i18n),
     feeds: () => renderFeeds(state.feeds, elements, i18n),
     posts: () => renderPosts(state, elements, i18n),
-    'ui.posts.watched': () => renderPosts(state, elements, i18n),
+    'ui.watchedPosts': () => renderPosts(state, elements, i18n),
     'ui.modal.postId': () => fillModal(state, elements),
   };
 

@@ -98,9 +98,7 @@ export default () => {
     posts: [],
     updateTimerId: null,
     ui: {
-      posts: {
-        watched: [],
-      },
+      watchedPosts: new Set(),
       modal: {
         postId: null,
       },
@@ -164,7 +162,7 @@ export default () => {
 
     if (postId) {
       e.stopPropagation();
-      watched.ui.posts.watched.push(postId);
+      watched.ui.watchedPosts.add(postId);
     }
 
     if (e.target.dataset.bsTarget === '#modal') {
