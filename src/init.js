@@ -96,7 +96,6 @@ export default () => {
     },
     feeds: [],
     posts: [],
-    language: 'ru',
     updateTimerId: null,
     ui: {
       posts: {
