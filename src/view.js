@@ -1,12 +1,18 @@
 import onChange from 'on-change';
 
-const renderForm = (form, elements, i18n) => {
-  const { input, button, feedback } = elements;
-  switch (form.status) {
+const renderForm = (status, elements) => {
+  const { input, button } = elements;
+  switch (status) {
+    case 'empty':
+      input.value = '';
+      break;
+
     case 'filling':
+      input.classList.remove('is-invalid');
       input.removeAttribute('disabled');
       input.removeAttribute('readonly');
       button.removeAttribute('disabled');
+      input.select();
       break;
 
     case 'proccessing':
@@ -15,31 +21,36 @@ const renderForm = (form, elements, i18n) => {
       button.setAttribute('disabled', true);
       break;
 
-    case 'failed':
+    case 'invalid':
       input.classList.add('is-invalid');
       input.removeAttribute('disabled');
       input.removeAttribute('readonly');
       button.removeAttribute('disabled');
-      feedback.classList.remove('text-success');
-      feedback.classList.add('text-danger');
-      feedback.textContent = i18n.t(form.message);
-      input.select();
-      break;
-
-    case 'success':
-      input.value = '';
-      input.classList.remove('is-invalid');
-      input.removeAttribute('disabled');
-      input.removeAttribute('readonly');
-      button.removeAttribute('disabled');
-      feedback.classList.remove('text-danger');
-      feedback.classList.add('text-success');
-      feedback.textContent = i18n.t(form.message);
-      input.select();
       break;
 
     default:
-      throw Error(`Неизвестный статус: ${form.status}`);
+      throw Error(`Неизвестный статус: ${status}`);
+  }
+};
+
+const renderFeedback = (status, message, elements, i18n) => {
+  const { feedback } = elements;
+
+  switch (status) {
+    case 'success':
+      feedback.classList.remove('text-danger');
+      feedback.classList.add('text-success');
+      feedback.textContent = i18n.t(message);
+      break;
+
+    case 'error':
+      feedback.classList.remove('text-success');
+      feedback.classList.add('text-danger');
+      feedback.textContent = i18n.t(message);
+      break;
+
+    default:
+      throw Error(`Неизвестный статус: ${status}`);
   }
 };
 
@@ -127,9 +138,55 @@ const fillModal = (state, elements) => {
   modalLink.href = url;
 };
 
+const handleFormStatus = (state, elements, i18n) => {
+  const { status, message } = state.form;
+
+  switch (status) {
+    case 'filling':
+      renderForm('filling', elements);
+      break;
+
+    case 'proccessing':
+      renderForm('proccessing', elements);
+      break;
+
+    case 'failed':
+      renderForm('invalid', elements);
+      renderFeedback('error', message, elements, i18n);
+      break;
+
+    default:
+      throw Error(`Неизвестный статус: ${status}`);
+  }
+};
+
+const handleLoadingStatus = (state, elements, i18n) => {
+  const { status, message } = state.loadingProccess;
+
+  switch (status) {
+    case 'loading':
+      renderForm('proccessing', elements);
+      break;
+
+    case 'success':
+      renderForm('empty', elements);
+      renderFeedback('success', message, elements, i18n);
+      break;
+
+    case 'failed':
+      renderForm('filling', elements);
+      renderFeedback('error', message, elements, i18n);
+      break;
+
+    default:
+      throw Error(`Неизвестный статус: ${status}`);
+  }
+};
+
 export default (state, elements, i18n) => {
   const mapping = {
-    'form.status': () => renderForm(state.form, elements, i18n),
+    'form.status': () => handleFormStatus(state, elements, i18n),
+    'loadingProccess.status': () => handleLoadingStatus(state, elements, i18n),
     feeds: () => renderFeeds(state.feeds, elements, i18n),
     posts: () => renderPosts(state, elements, i18n),
     'ui.watchedPosts': () => renderPosts(state, elements, i18n),

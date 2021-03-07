@@ -94,6 +94,10 @@ export default () => {
       status: 'filling',
       message: '',
     },
+    loadingProccess: {
+      status: 'idle',
+      message: '',
+    },
     feeds: [],
     posts: [],
     updateTimerId: null,
@@ -135,25 +139,28 @@ export default () => {
       return;
     }
 
+    watched.loadingProccess.status = 'loading';
     axios.get(prepareUrl(url))
       .then((res) => {
         try {
           const feed = parseRSS(res.data.contents);
           const feedId = handleFeed(url, feed, watched);
           handlePosts(feedId, feed, watched);
-          watched.form.message = 'messages.success.loaded';
-          watched.form.status = 'success';
+          watched.form.status = 'filling';
+          watched.form.message = '';
+          watched.loadingProccess.message = 'messages.success.loaded';
+          watched.loadingProccess.status = 'success';
           if (!state.updateTimerId) {
             state.updateTimerId = setTimeout(updatePosts, UPDATE_INTERVAL, watched);
           }
         } catch (err) {
-          watched.form.message = 'messages.errors.wrongResource';
-          watched.form.status = 'failed';
+          watched.loadingProccess.message = 'messages.errors.wrongResource';
+          watched.loadingProccess.status = 'failed';
         }
       })
       .catch(() => {
-        watched.form.message = 'messages.errors.network';
-        watched.form.status = 'failed';
+        watched.loadingProccess.message = 'messages.errors.network';
+        watched.loadingProccess.status = 'failed';
       });
   });
 
