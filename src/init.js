@@ -140,8 +140,8 @@ export default () => {
         getFeed(url)
           .then((data) => {
             try {
-              const feed = parseRSS(data);
-              handleFeed(url, feed, watched);
+              const rss = parseRSS(data);
+              handleFeed(url, rss, watched);
               watched.form.status = 'filling';
               watched.form.message = '';
               watched.loadingProccess.message = 'messages.success.loaded';
