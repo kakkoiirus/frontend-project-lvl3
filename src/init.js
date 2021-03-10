@@ -11,6 +11,13 @@ import parseRSS from './parser.js';
 
 const UPDATE_INTERVAL = 20000;
 
+setLocale({
+  string: {
+    default: 'messages.errors.invalidUrl',
+    url: 'messages.errors.invalidUrl',
+  },
+});
+
 const prepareUrl = (url) => `https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(url)}`;
 
 const getFeed = (url) => {
@@ -21,18 +28,13 @@ const getFeed = (url) => {
 };
 
 const validate = (url, feeds) => {
-  setLocale({
-    string: {
-      default: 'messages.errors.invalidUrl',
-      url: 'messages.errors.invalidUrl',
-    },
-  });
+  const feedUrls = feeds.map((feed) => feed.url);
 
   const schema = yup
     .string()
     .trim()
     .url()
-    .notOneOf(feeds, 'messages.errors.alreadyExist')
+    .notOneOf(feedUrls, 'messages.errors.alreadyExist')
     .required();
 
   try {
@@ -130,9 +132,7 @@ export default () => {
 
     watched.form.status = 'proccessing';
 
-    const feedList = state.feeds.map((feed) => feed.url);
-
-    const error = validate(url, feedList);
+    const error = validate(url, state.feeds);
     if (error) {
       watched.form.message = error;
       watched.form.status = 'failed';
@@ -170,9 +170,6 @@ export default () => {
     if (postId) {
       e.stopPropagation();
       watched.ui.watchedPosts.add(postId);
-    }
-
-    if (e.target.dataset.bsTarget === '#modal') {
       watched.ui.modal.postId = postId;
     }
   });
