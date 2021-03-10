@@ -166,6 +166,7 @@ const handleLoadingStatus = (state, elements, i18n) => {
 
     case 'idle':
       renderForm('empty', elements);
+      renderForm('filling', elements);
       renderFeedback('success', message, elements, i18n);
       break;
 

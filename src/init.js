@@ -139,20 +139,20 @@ export default () => {
         watched.loadingProccess.status = 'loading';
         getFeed(url)
           .then((data) => {
-            try {
-              const rss = parseRSS(data);
-              handleFeed(url, rss, watched);
-              watched.form.status = 'filling';
-              watched.form.message = '';
-              watched.loadingProccess.message = 'messages.success.loaded';
-              watched.loadingProccess.status = 'idle';
-            } catch (err) {
-              watched.loadingProccess.message = 'messages.errors.wrongResource';
-              watched.loadingProccess.status = 'failed';
-            }
+            const rss = parseRSS(data);
+            handleFeed(url, rss, watched);
+            watched.form.message = '';
+            watched.form.status = 'filling';
+            watched.loadingProccess.message = 'messages.success.loaded';
+            watched.loadingProccess.status = 'idle';
           })
-          .catch(() => {
-            watched.loadingProccess.message = 'messages.errors.network';
+          .catch((err) => {
+            if (err.message === 'Network Error') {
+              watched.loadingProccess.message = 'messages.errors.network';
+            } else {
+              watched.loadingProccess.message = 'messages.errors.wrongResource';
+            }
+
             watched.loadingProccess.status = 'failed';
           });
       });
