@@ -147,7 +147,7 @@ export default () => {
             watched.loadingProccess.status = 'idle';
           })
           .catch((err) => {
-            if (err.message === 'Network Error') {
+            if (err.request) {
               watched.loadingProccess.message = 'messages.errors.network';
             } else {
               watched.loadingProccess.message = 'messages.errors.wrongResource';
