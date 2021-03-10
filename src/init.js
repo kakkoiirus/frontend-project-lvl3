@@ -81,15 +81,11 @@ const updatePosts = (state) => {
       .then((rss) => handlePosts(id, rss, state));
   });
 
-  setInterval(updatePosts, UPDATE_INTERVAL, state);
+  setTimeout(updatePosts, UPDATE_INTERVAL, state);
 };
 
 export default () => {
   const i18nextInstance = i18next.createInstance();
-  i18nextInstance.init({
-    lng: 'ru',
-    resources,
-  });
 
   const state = {
     form: {
@@ -123,54 +119,57 @@ export default () => {
     modalLink: document.querySelector('.full-article'),
   };
 
-  const watched = initView(state, elements, i18nextInstance);
+  i18nextInstance.init({
+    lng: 'ru',
+    resources,
+  })
+    .then(() => {
+      const watched = initView(state, elements, i18nextInstance);
 
-  elements.form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const url = formData.get('url');
+      setTimeout(updatePosts, UPDATE_INTERVAL, watched);
 
-    watched.form.status = 'proccessing';
+      elements.form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const url = formData.get('url');
 
-    const error = validate(url, state.feeds);
-    if (error) {
-      watched.form.message = error;
-      watched.form.status = 'failed';
-      return;
-    }
-
-    watched.loadingProccess.status = 'loading';
-    axios.get(prepareUrl(url))
-      .then((res) => {
-        try {
-          const feed = parseRSS(res.data.contents);
-          const feedId = handleFeed(url, feed, watched);
-          handlePosts(feedId, feed, watched);
-          watched.form.status = 'filling';
-          watched.form.message = '';
-          watched.loadingProccess.message = 'messages.success.loaded';
-          watched.loadingProccess.status = 'success';
-          if (!state.updateTimerId) {
-            state.updateTimerId = setTimeout(updatePosts, UPDATE_INTERVAL, watched);
-          }
-        } catch (err) {
-          watched.loadingProccess.message = 'messages.errors.wrongResource';
-          watched.loadingProccess.status = 'failed';
+        const error = validate(url, state.feeds);
+        if (error) {
+          watched.form.message = error;
+          watched.form.status = 'invalid';
+          return;
         }
-      })
-      .catch(() => {
-        watched.loadingProccess.message = 'messages.errors.network';
-        watched.loadingProccess.status = 'failed';
+
+        watched.loadingProccess.status = 'loading';
+        getFeed(url)
+          .then((data) => {
+            try {
+              const feed = parseRSS(data);
+              const feedId = handleFeed(url, feed, watched);
+              handlePosts(feedId, feed, watched);
+              watched.form.status = 'filling';
+              watched.form.message = '';
+              watched.loadingProccess.message = 'messages.success.loaded';
+              watched.loadingProccess.status = 'idle';
+            } catch (err) {
+              watched.loadingProccess.message = 'messages.errors.wrongResource';
+              watched.loadingProccess.status = 'failed';
+            }
+          })
+          .catch(() => {
+            watched.loadingProccess.message = 'messages.errors.network';
+            watched.loadingProccess.status = 'failed';
+          });
       });
-  });
 
-  elements.postsBlock.addEventListener('click', (e) => {
-    const postId = e.target.dataset.id;
+      elements.postsBlock.addEventListener('click', (e) => {
+        const postId = e.target.dataset.id;
 
-    if (postId) {
-      e.stopPropagation();
-      watched.ui.watchedPosts.add(postId);
-      watched.ui.modal.postId = postId;
-    }
-  });
+        if (postId) {
+          e.stopPropagation();
+          watched.ui.watchedPosts.add(postId);
+          watched.ui.modal.postId = postId;
+        }
+      });
+    });
 };

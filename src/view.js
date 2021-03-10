@@ -15,7 +15,7 @@ const renderForm = (status, elements) => {
       input.select();
       break;
 
-    case 'proccessing':
+    case 'disabled':
       input.setAttribute('disabled', true);
       input.setAttribute('readonly', '');
       button.setAttribute('disabled', true);
@@ -146,11 +146,7 @@ const handleFormStatus = (state, elements, i18n) => {
       renderForm('filling', elements);
       break;
 
-    case 'proccessing':
-      renderForm('proccessing', elements);
-      break;
-
-    case 'failed':
+    case 'invalid':
       renderForm('invalid', elements);
       renderFeedback('error', message, elements, i18n);
       break;
@@ -165,10 +161,10 @@ const handleLoadingStatus = (state, elements, i18n) => {
 
   switch (status) {
     case 'loading':
-      renderForm('proccessing', elements);
+      renderForm('disabled', elements);
       break;
 
-    case 'success':
+    case 'idle':
       renderForm('empty', elements);
       renderFeedback('success', message, elements, i18n);
       break;
