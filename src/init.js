@@ -46,25 +46,21 @@ const validate = (url, feeds) => {
 };
 
 const handleFeed = (url, feed, state) => {
-  const { title, description } = feed;
-  const feedId = _.uniqueId();
+  const { title, description, posts } = feed;
 
-  state.feeds.push({
-    id: feedId,
-    title,
-    description,
-    url,
-  });
+  const isFeedExist = state.feeds.some((item) => item.url === url);
 
-  return feedId;
-};
-
-const handlePosts = (feedId, feed, state) => {
-  const { posts } = feed;
+  if (!isFeedExist) {
+    state.feeds.push({
+      url,
+      title,
+      description,
+    });
+  }
 
   const linkedPosts = posts.map((post) => {
     const postId = _.uniqueId();
-    const newPost = { id: postId, ...post, feedId };
+    const newPost = { id: postId, ...post, feedUrl: url };
     return newPost;
   });
 
@@ -74,11 +70,11 @@ const handlePosts = (feedId, feed, state) => {
 
 const updatePosts = (state) => {
   state.feeds.forEach((feed) => {
-    const { id, url } = feed;
+    const { url } = feed;
 
     getFeed(url)
       .then((data) => parseRSS(data))
-      .then((rss) => handlePosts(id, rss, state));
+      .then((rss) => handleFeed(url, rss, state));
   });
 
   setTimeout(updatePosts, UPDATE_INTERVAL, state);
@@ -145,8 +141,7 @@ export default () => {
           .then((data) => {
             try {
               const feed = parseRSS(data);
-              const feedId = handleFeed(url, feed, watched);
-              handlePosts(feedId, feed, watched);
+              handleFeed(url, feed, watched);
               watched.form.status = 'filling';
               watched.form.message = '';
               watched.loadingProccess.message = 'messages.success.loaded';
