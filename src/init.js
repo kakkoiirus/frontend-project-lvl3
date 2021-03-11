@@ -11,14 +11,17 @@ import parseRSS from './parser.js';
 
 const UPDATE_INTERVAL = 20000;
 
-setLocale({
-  string: {
-    default: 'messages.errors.invalidUrl',
-    url: 'messages.errors.invalidUrl',
-  },
-});
+const prepareUrl = (url) => {
+  const preparedUrl = new URL('/get', 'https://hexlet-allorigins.herokuapp.com/');
+  const params = new URLSearchParams({
+    disableCache: true,
+    url,
+  });
 
-const prepareUrl = (url) => `https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(url)}`;
+  preparedUrl.search = params;
+
+  return preparedUrl.href;
+};
 
 const getFeed = (url) => {
   const preparedUrl = prepareUrl(url);
@@ -64,8 +67,9 @@ const handleFeed = (url, feed, state) => {
     return newPost;
   });
 
-  const postsDiff = _.differenceBy(linkedPosts, state.posts, 'url');
-  state.posts.unshift(...postsDiff);
+  return isFeedExist
+    ? _.differenceBy(linkedPosts, state.posts, 'url')
+    : linkedPosts;
 };
 
 const updatePosts = (state) => {
@@ -74,10 +78,12 @@ const updatePosts = (state) => {
 
     getFeed(url)
       .then((data) => parseRSS(data))
-      .then((rss) => handleFeed(url, rss, state));
+      .then((rss) => {
+        const postDiff = handleFeed(url, rss, state);
+        state.posts.unshift(...postDiff);
+        setTimeout(updatePosts, UPDATE_INTERVAL, state);
+      });
   });
-
-  setTimeout(updatePosts, UPDATE_INTERVAL, state);
 };
 
 export default () => {
@@ -115,6 +121,13 @@ export default () => {
     modalLink: document.querySelector('.full-article'),
   };
 
+  setLocale({
+    string: {
+      default: 'messages.errors.invalidUrl',
+      url: 'messages.errors.invalidUrl',
+    },
+  });
+
   i18nextInstance.init({
     lng: 'ru',
     resources,
@@ -136,13 +149,15 @@ export default () => {
           return;
         }
 
+        watched.form.message = '';
+        watched.form.status = 'filling';
+
         watched.loadingProccess.status = 'loading';
         getFeed(url)
           .then((data) => {
             const rss = parseRSS(data);
-            handleFeed(url, rss, watched);
-            watched.form.message = '';
-            watched.form.status = 'filling';
+            const posts = handleFeed(url, rss, watched);
+            watched.posts.unshift(...posts);
             watched.loadingProccess.message = 'messages.success.loaded';
             watched.loadingProccess.status = 'idle';
           })
