@@ -183,6 +183,7 @@ const handleLoadingStatus = (state, elements, i18n) => {
 export default (state, elements, i18n) => {
   const mapping = {
     'form.status': () => handleFormStatus(state, elements, i18n),
+    'form.message': () => handleFormStatus(state, elements, i18n),
     'loadingProccess.status': () => handleLoadingStatus(state, elements, i18n),
     feeds: () => renderFeeds(state.feeds, elements, i18n),
     posts: () => renderPosts(state, elements, i18n),
@@ -191,9 +192,11 @@ export default (state, elements, i18n) => {
   };
 
   const watchedState = onChange(state, (path) => {
-    if (mapping[path]) {
-      mapping[path]();
+    if (!mapping[path]) {
+      return;
     }
+
+    mapping[path]();
   });
 
   return watchedState;

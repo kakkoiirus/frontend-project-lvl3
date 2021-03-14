@@ -48,39 +48,41 @@ const validate = (url, feeds) => {
   }
 };
 
-const handleFeed = (url, feed, state) => {
-  const { title, description, posts } = feed;
+const handleFeed = (url, rss) => {
+  const { title, description, posts } = rss;
+  const feedId = _.uniqueId();
 
-  const isFeedExist = state.feeds.some((item) => item.url === url);
+  const feed = {
+    id: feedId,
+    url,
+    title,
+    description,
+  };
 
-  if (!isFeedExist) {
-    state.feeds.push({
-      url,
-      title,
-      description,
-    });
-  }
-
-  const linkedPosts = posts.map((post) => {
+  const newPosts = posts.map((post) => {
     const postId = _.uniqueId();
-    const newPost = { id: postId, ...post, feedUrl: url };
+    const newPost = { id: postId, ...post, feedId };
     return newPost;
   });
 
-  return isFeedExist
-    ? _.differenceBy(linkedPosts, state.posts, 'url')
-    : linkedPosts;
+  return { feed, posts: newPosts };
 };
 
 const updatePosts = (state) => {
   state.feeds.forEach((feed) => {
-    const { url } = feed;
+    const { id: feedId, url } = feed;
 
     getFeed(url)
       .then((data) => parseRSS(data))
-      .then((rss) => {
-        const postDiff = handleFeed(url, rss, state);
-        state.posts.unshift(...postDiff);
+      .then(({ posts }) => {
+        const proccessedPosts = posts.map((post) => {
+          const postId = _.uniqueId();
+          const newPost = { id: postId, ...post, feedId };
+          return newPost;
+        });
+
+        const newPosts = _.differenceBy(proccessedPosts, state.posts, 'url');
+        state.posts.unshift(...newPosts);
         setTimeout(updatePosts, UPDATE_INTERVAL, state);
       });
   });
@@ -100,7 +102,6 @@ export default () => {
     },
     feeds: [],
     posts: [],
-    updateTimerId: null,
     ui: {
       watchedPosts: new Set(),
       modal: {
@@ -156,7 +157,8 @@ export default () => {
         getFeed(url)
           .then((data) => {
             const rss = parseRSS(data);
-            const posts = handleFeed(url, rss, watched);
+            const { feed, posts } = handleFeed(url, rss);
+            watched.feeds.unshift(feed);
             watched.posts.unshift(...posts);
             watched.loadingProccess.message = 'messages.success.loaded';
             watched.loadingProccess.status = 'idle';
@@ -173,13 +175,15 @@ export default () => {
       });
 
       elements.postsBlock.addEventListener('click', (e) => {
+        e.stopPropagation();
         const postId = e.target.dataset.id;
 
-        if (postId) {
-          e.stopPropagation();
-          watched.ui.watchedPosts.add(postId);
-          watched.ui.modal.postId = postId;
+        if (!postId) {
+          return;
         }
+
+        watched.ui.watchedPosts.add(postId);
+        watched.ui.modal.postId = postId;
       });
     });
 };
