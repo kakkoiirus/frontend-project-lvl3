@@ -69,23 +69,26 @@ const handleFeed = (url, rss) => {
 };
 
 const updatePosts = (state) => {
-  state.feeds.forEach((feed) => {
+  const promises = state.feeds.map((feed) => {
     const { id: feedId, url } = feed;
 
-    getFeed(url)
+    return getFeed(url)
       .then((data) => parseRSS(data))
       .then(({ posts }) => {
-        const proccessedPosts = posts.map((post) => {
+        const postsDiff = _.differenceBy(posts, state.posts, 'url');
+
+        const newPosts = postsDiff.map((post) => {
           const postId = _.uniqueId();
           const newPost = { id: postId, ...post, feedId };
           return newPost;
         });
 
-        const newPosts = _.differenceBy(proccessedPosts, state.posts, 'url');
         state.posts.unshift(...newPosts);
-        setTimeout(updatePosts, UPDATE_INTERVAL, state);
       });
   });
+
+  Promise.all(promises)
+    .then(() => setTimeout(updatePosts, UPDATE_INTERVAL, state));
 };
 
 export default () => {
