@@ -84,7 +84,8 @@ const updatePosts = (state) => {
         });
 
         state.posts.unshift(...newPosts);
-      });
+      })
+      .catch((err) => console.log(err));
   });
 
   Promise.all(promises)
