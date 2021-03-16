@@ -157,7 +157,7 @@ const handleFormStatus = (state, elements, i18n) => {
 };
 
 const handleLoadingStatus = (state, elements, i18n) => {
-  const { status, message } = state.loadingProccess;
+  const { status, message } = state.loadingProcess;
 
   switch (status) {
     case 'loading':
@@ -184,7 +184,7 @@ export default (state, elements, i18n) => {
   const mapping = {
     'form.status': () => handleFormStatus(state, elements, i18n),
     'form.message': () => handleFormStatus(state, elements, i18n),
-    'loadingProccess.status': () => handleLoadingStatus(state, elements, i18n),
+    'loadingProcess.status': () => handleLoadingStatus(state, elements, i18n),
     feeds: () => renderFeeds(state.feeds, elements, i18n),
     posts: () => renderPosts(state, elements, i18n),
     'ui.watchedPosts': () => renderPosts(state, elements, i18n),

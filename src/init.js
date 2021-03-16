@@ -99,7 +99,7 @@ export default () => {
       status: 'filling',
       message: '',
     },
-    loadingProccess: {
+    loadingProcess: {
       status: 'idle',
       message: '',
     },
@@ -156,24 +156,24 @@ export default () => {
         watched.form.message = '';
         watched.form.status = 'filling';
 
-        watched.loadingProccess.status = 'loading';
+        watched.loadingProcess.status = 'loading';
         getFeed(url)
           .then((data) => {
             const rss = parseRSS(data);
             const { feed, posts } = handleFeed(url, rss);
             watched.feeds.unshift(feed);
             watched.posts.unshift(...posts);
-            watched.loadingProccess.message = 'messages.success.loaded';
-            watched.loadingProccess.status = 'idle';
+            watched.loadingProcess.message = 'messages.success.loaded';
+            watched.loadingProcess.status = 'idle';
           })
           .catch((err) => {
             if (err.request) {
-              watched.loadingProccess.message = 'messages.errors.network';
+              watched.loadingProcess.message = 'messages.errors.network';
             } else {
-              watched.loadingProccess.message = 'messages.errors.wrongResource';
+              watched.loadingProcess.message = 'messages.errors.wrongResource';
             }
 
-            watched.loadingProccess.status = 'failed';
+            watched.loadingProcess.status = 'failed';
           });
       });
 
