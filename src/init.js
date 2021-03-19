@@ -5,7 +5,7 @@ import axios from 'axios';
 import i18next from 'i18next';
 import _ from 'lodash';
 
-import resources from './locales';
+import resources from './locales/index.js';
 import initView from './view.js';
 import parseRSS from './parser.js';
 
@@ -37,7 +37,7 @@ const validate = (url, feeds) => {
     .string()
     .trim()
     .url()
-    .notOneOf(feedUrls, 'messages.errors.alreadyExist')
+    .notOneOf(feedUrls)
     .required();
 
   try {
@@ -127,8 +127,11 @@ export default () => {
   };
 
   setLocale({
-    string: {
+    mixed: {
       default: 'messages.errors.invalidUrl',
+      notOneOf: 'messages.errors.alreadyExist',
+    },
+    string: {
       url: 'messages.errors.invalidUrl',
     },
   });
