@@ -1,10 +1,17 @@
 export default (string) => {
   const domparser = new DOMParser();
-  const data = domparser.parseFromString(string, 'application/xml');
-  const title = data.querySelector('title').textContent;
-  const description = data.querySelector('description').textContent;
+  const document = domparser.parseFromString(string, 'application/xml');
 
-  const items = data.querySelectorAll('item');
+  const errors = document.querySelectorAll('parsererror');
+
+  if (errors.length > 0) {
+    throw new Error('Parsing error');
+  }
+
+  const title = document.querySelector('title').textContent;
+  const description = document.querySelector('description').textContent;
+
+  const items = document.querySelectorAll('item');
   const posts = Array.from(items).map((item) => {
     const postTitle = item.querySelector('title').textContent;
     const postDescription = item.querySelector('description').textContent;
